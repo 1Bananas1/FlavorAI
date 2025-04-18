@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import NavigationBar from './components/NavigationBar';
 import SplashScreen from './screens/SplashScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is already logged in
   useEffect(() => {
+    // Check if user is already logged in
     checkLoginStatus();
   }, []);
 
@@ -20,25 +21,27 @@ export default function App() {
       setIsLoggedIn(!!userToken);
     } catch (error) {
       console.error('Error checking login status:', error);
-      setIsLoggedIn(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = (userInfo) => {
+    console.log('User logged in:', userInfo);
     setIsLoggedIn(true);
   };
 
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('userToken');
+      await AsyncStorage.removeItem('userInfo');
       setIsLoggedIn(false);
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error('Error during logout:', error);
     }
   };
 
-  // Show loading state while checking authentication
-  if (isLoggedIn === null) {
+  if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <Text>Loading...</Text>
@@ -46,12 +49,10 @@ export default function App() {
     );
   }
 
-  // If not logged in, show the splash screen
   if (!isLoggedIn) {
     return <SplashScreen onLogin={handleLogin} />;
   }
 
-  // If logged in, show the main app UI
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFF5E6" />
@@ -64,7 +65,7 @@ export default function App() {
           size={24} 
           color="black" 
           style={styles.menuIcon} 
-          onPress={handleLogout} // Added logout functionality to menu icon for testing
+          onPress={handleLogout}
         />
       </View>
       
