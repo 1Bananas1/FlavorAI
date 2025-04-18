@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useAuth } from '@/context/auth';
+import LoginForm from '@/components/LoginForm';
+import Bypass from '@/components/Bypass';
 
 type SplashScreenProps = {
   onLogin: () => void;
@@ -8,17 +10,18 @@ type SplashScreenProps = {
 
 const SplashScreen = ({ onLogin }: SplashScreenProps) => {
   // Keeping the onLogin prop to maintain compatibility with the current App.tsx
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, signOut } = useAuth();
   
   return (
     <SafeAreaView style={styles.container}>
-      {!isLoading ? (
+      {isLoading ? (
         <View style={styles.loadingContainer}>
-          <Text>Loading...</Text>
+          <ActivityIndicator size="large" color="#ffffff" />
         </View>
       ) : (
         <View style={styles.content}>
-          {/* This is now an empty container with just the background color */}
+          {!user && <LoginForm />}
+          {!user && <Bypass />}
         </View>
       )}
     </SafeAreaView>

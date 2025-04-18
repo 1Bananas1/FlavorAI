@@ -1,6 +1,8 @@
-import { AuthError } from "expo-auth-session";
+import { BASE_URL } from "@/constants";
+import { AuthError, AuthRequestConfig, DiscoveryDocument, makeRedirectUri, useAuthRequest } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import * as React from "react";
+
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -18,21 +20,62 @@ export type AuthUser = {
 }
 
 
+
 const AuthContext = React.createContext({
-    user: null,
+    user: null as AuthUser | null,
     signIn: () => {},
     signOut: () => {},
-    fetchWithAuth: async (URL: string, options?: RequestInit) => Promise.resolve(new Response()),
+    fetchWithAuth: async (url: string, options?: RequestInit) => 
+        Promise.resolve(new Response()),
     isLoading: false,
     error: null as AuthError | null,
 });
 
-export const AuthProvider = ({children}): { children: React.ReactNode } => {
+const config: AuthRequestConfig = {
+    clientId: "google",
+    scopes: ["openid", "profile", "email"],
+    redirectUri: makeRedirectUri({
+        useProxy: true,
+    }),
+};
+
+
+
+
+// for expo go, use 
+// authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+// tokenEndpoint: "https://oauth2.googleapis.com/token",
+// for standalone app, use
+// authorizationEndpoint: `${BASE_URL}/api/auth/authorize`,
+// tokenEndpoint: `${BASE_URL}/api/auth/token`,
+const discovery: DiscoveryDocument = {
+    authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+    tokenEndpoint: "https://oauth2.googleapis.com/token",
+};
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = React.useState<AuthUser | null>(null);
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState<AuthError | null>(null);
 
-    const signIn = async () => {};
+    const [request, response, promptAsync] = useAuthRequest(config, discovery);
+
+    const signIn = async () => {
+        try {
+            if (!request) {
+                console.log('no request');
+                return;
+            }
+
+            console.log('clicked');
+            console.log('Base URL:', BASE_URL);
+            console.log('Config:', config);  // Add this to check your config
+            console.log('Discovery:', discovery);
+            await promptAsync();
+        } catch (e) {
+            console.log(e)
+        }
+    };
 
     const signOut = async () => {};
 
@@ -45,8 +88,8 @@ export const AuthProvider = ({children}): { children: React.ReactNode } => {
                 signIn,
                 signOut,
                 fetchWithAuth,
-                isLoading:false,
-                error:null,
+                isLoading,
+                error,
             }}
         >
             {children}

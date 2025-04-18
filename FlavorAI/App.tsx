@@ -4,8 +4,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import NavigationBar from './components/NavigationBar';
 import SplashScreen from './screens/SplashScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthProvider } from './context/auth';  // Import AuthProvider
 
-export default function App() {
+function MainApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [isLoading, setIsLoading] = useState(true);
@@ -77,6 +78,14 @@ export default function App() {
       {/* Bottom Navigation */}
       <NavigationBar activeTab={activeTab} setActiveTab={setActiveTab} />
     </SafeAreaView>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
   );
 }
 
