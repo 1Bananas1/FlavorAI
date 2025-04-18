@@ -1,4 +1,4 @@
-import { BASE_URL } from "@/constants";
+import { BASE_URL, GOOGLE_CLIENT_ID } from "@/constants";
 import { AuthError, AuthRequestConfig, DiscoveryDocument, makeRedirectUri, useAuthRequest } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import * as React from "react";
@@ -32,11 +32,9 @@ const AuthContext = React.createContext({
 });
 
 const config: AuthRequestConfig = {
-    clientId: "google",
+    clientId: GOOGLE_CLIENT_ID,
     scopes: ["openid", "profile", "email"],
-    redirectUri: makeRedirectUri({
-        useProxy: true,
-    }),
+    redirectUri: BASE_URL,
 };
 
 
