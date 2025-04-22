@@ -4,13 +4,8 @@ import { useAuth } from '@/context/auth';
 import LoginForm from '@/components/LoginForm';
 import Bypass from '@/components/Bypass';
 
-type SplashScreenProps = {
-  onLogin: () => void;
-};
-
-const SplashScreen = ({ onLogin }: SplashScreenProps) => {
-  // Keeping the onLogin prop to maintain compatibility with the current App.tsx
-  const { user, isLoading, signOut } = useAuth();
+const SplashScreen = () => {
+  const { isLoading } = useAuth();
   
   return (
     <SafeAreaView style={styles.container}>
@@ -20,8 +15,8 @@ const SplashScreen = ({ onLogin }: SplashScreenProps) => {
         </View>
       ) : (
         <View style={styles.content}>
-          {!user && <LoginForm />}
-          {!user && <Bypass />}
+          <LoginForm />
+          <Bypass />
         </View>
       )}
     </SafeAreaView>
@@ -31,7 +26,7 @@ const SplashScreen = ({ onLogin }: SplashScreenProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4A460', // Keeping the original background color
+    backgroundColor: '#F4A460',
   },
   content: {
     flex: 1,

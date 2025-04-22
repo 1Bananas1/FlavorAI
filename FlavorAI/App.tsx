@@ -1,59 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, StatusBar, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import NavigationBar from './components/NavigationBar';
 import SplashScreen from './screens/SplashScreen';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AuthProvider } from './context/auth';  // Import AuthProvider
+import { AuthProvider, useAuth } from './context/auth';
+import HomeScreen from './screens/HomeScreen'; // You'll need to create this
+import MapScreen from './screens/MapScreen'; // You'll need to create this
+import CoffeeScreen from './screens/CoffeeScreen'; // You'll need to create this
+import FavoritesScreen from './screens/FavoritesScreen'; // You'll need to create this
+import ProfileScreen from './screens/ProfileScreen'; // You'll need to create this
 
 function MainApp() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, isLoading, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('home');
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Check if user is already logged in
-    checkLoginStatus();
-  }, []);
-
-  const checkLoginStatus = async () => {
-    try {
-      const userToken = await AsyncStorage.getItem('userToken');
-      setIsLoggedIn(!!userToken);
-    } catch (error) {
-      console.error('Error checking login status:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLogin = (userInfo) => {
-    console.log('User logged in:', userInfo);
-    setIsLoggedIn(true);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await AsyncStorage.removeItem('userToken');
-      await AsyncStorage.removeItem('userInfo');
-      setIsLoggedIn(false);
-    } catch (error) {
-      console.error('Error during logout:', error);
+  // Render the appropriate screen based on the active tab
+  const renderScreen = () => {
+    switch(activeTab) {
+      case 'home':
+        return <HomeScreen />;
+      case 'map':
+        return <MapScreen />;
+      case 'coffee':
+        return <CoffeeScreen />;
+      case 'favorites':
+        return <FavoritesScreen />;
+      case 'account':
+        return <ProfileScreen />;
+      default:
+        return <HomeScreen />;
     }
   };
 
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" color="#4A8C35" />
       </View>
     );
   }
 
-  if (!isLoggedIn) {
-    return <SplashScreen onLogin={handleLogin} />;
+  // If no user is authenticated, show the splash screen
+  if (!user) {
+    return <SplashScreen />;
   }
 
+  // User is authenticated, show the main app
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFF5E6" />
@@ -66,13 +58,13 @@ function MainApp() {
           size={24} 
           color="black" 
           style={styles.menuIcon} 
-          onPress={handleLogout}
+          onPress={signOut}
         />
       </View>
       
       {/* Main Content - will change based on active tab */}
       <View style={styles.content}>
-        <Text style={styles.tabText}>Current Tab: {activeTab}</Text>
+        {renderScreen()}
       </View>
       
       {/* Bottom Navigation */}
@@ -94,6 +86,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FFF5E6',
   },
   container: {
     flex: 1,
@@ -118,12 +111,5 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     backgroundColor: '#F4A460',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tabText: {
-    fontSize: 18,
-    color: 'white',
-    fontWeight: 'bold',
   }
 });
